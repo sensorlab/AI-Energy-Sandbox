@@ -15,8 +15,7 @@ import importlib
 
 from giskard import Suite, testing
 
-from app import model_xgb
-from app import model_torch
+from app import model_onnx
 from app import model_ieeebus39
 from app import ieee_bus_tests
 
@@ -158,36 +157,28 @@ async def upload_ieeebus39_config(
 @app.post("/upload/model")
 async def upload_model(
     submission_id: str = Query(...),
-    model_type: str = Query(...),
-    checkpoint_file: Optional[UploadFile] = File(None),
-    i_max_ka: Optional[float] = Query(None),
-    vmin: Optional[float] = Query(None),
-    vmax: Optional[float] = Query(None)):
+    checkpoint_file: Optional[UploadFile] = File(None)):
     """
-    Args:
-        model_file (UploadFile, optional): _description_. Defaults to File(...).
-        checkpoint_file (UploadFile, optional): _description_. Defaults to File(...).
-    Returns:
-       html response with scan reports for each target column. 
+    Uploads an ONNX checkpoint for evaluation. PyTorch, XGBoost, scikit-learn,
+    TensorFlow, etc. should be exported to ONNX before uploading.
     """
-   
+
     submission_dir = SUBMISSIONS_ROOT / submission_id
     submission_dir.mkdir(exist_ok=True)
-    
-    for file in submission_dir.iterdir():
-        if file.name.startswith("checkpoint_"):
-            os.remove(file)
-            
+
+    existing_checkpoint = submission_dir / "checkpoint.onnx"
+    if existing_checkpoint.exists():
+        os.remove(existing_checkpoint)
+
     if os.path.exists(submission_dir / 'model_report.html'):
         os.remove(submission_dir / 'model_report.html')
-    
+
     if not checkpoint_file:
         raise HTTPException(status_code=400, detail="Checkpoint file required for ML models.")
-    
+
     checkpoint_contents = await checkpoint_file.read()
-    checkpoint_path = submission_dir / f"checkpoint_{model_type.lower()}"
-    checkpoint_path.write_bytes(checkpoint_contents)
-    
+    existing_checkpoint.write_bytes(checkpoint_contents)
+
     return {"status": "uploaded"}
     
 @app.post("/upload/data")
@@ -305,13 +296,9 @@ async def check_model(
     if not os.path.exists(submission_dir / 'data.csv'):
         raise HTTPException(status_code=400, detail="The data.csv must be uploaded before checking the model")
     
-    checkpoint_path = None
-    for type in ['xgboost','pytorch']:
-        if os.path.exists(submission_dir / f'checkpoint_{type}'):
-            checkpoint_path = submission_dir / f'checkpoint_{type}'
-            break
-    if checkpoint_path is None:
-        raise HTTPException(status_code=400, detail="The checkpoint file must be uploaded before checking the model") 
+    checkpoint_path = submission_dir / 'checkpoint.onnx'
+    if not checkpoint_path.exists():
+        raise HTTPException(status_code=400, detail="The checkpoint file must be uploaded before checking the model")
         
     data = pd.read_csv(submission_dir / 'data.csv')
     
@@ -325,13 +312,7 @@ async def check_model(
         giskard.Dataset(data, target = target_columns[i]) for i in range(len(target_columns))
     ]
     
-    if 'pytorch' in str(checkpoint_path):
-        type = 'pytorch'
-        model = model_torch.Model(str(checkpoint_path))
-    if 'xgboost' in str(checkpoint_path):
-        type = 'xgboost'
-        model = model_xgb.Model(str(checkpoint_path))
-        
+    model = model_onnx.Model(str(checkpoint_path))
     model.load_checkpoint()
     
     giskard_models = [

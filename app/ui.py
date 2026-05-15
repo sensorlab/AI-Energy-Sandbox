@@ -49,26 +49,20 @@ with tab1:
     
     with col1:
         st.subheader("Model Configuration")
-        
-        # 1. Select Model Type
-        model_type = st.selectbox(
-            "Select Model Library",
-            options=["XGBoost", "PyTorch"],
-            help="Select the framework"
-        )
-        # Standard File Upload for XGBoost/PyTorch
-        st.info(f"Please upload your saved **{model_type}** file.")
-        checkpoint_file = st.file_uploader("Upload Model Checkpoint", type=["json", "pth"])
-        
+
+        st.info("Please upload your model exported to **ONNX** format (`.onnx`). "
+                "PyTorch, XGBoost, scikit-learn, TensorFlow, etc. can all be exported to ONNX.")
+        checkpoint_file = st.file_uploader("Upload Model Checkpoint", type=["onnx"])
+
         if st.button("Submit Model"):
             if checkpoint_file and submission_id:
                 files = {"checkpoint_file": (checkpoint_file.name, checkpoint_file.getvalue())}
-                params = {"submission_id": submission_id, "model_type": model_type.lower()}
-                
+                params = {"submission_id": submission_id}
+
                 with st.spinner("Uploading model..."):
                     res = requests.post(f"{API_URL}/upload/model", params=params, files=files)
                     if res.status_code == 200:
-                        st.success(f"✅ {model_type} model uploaded!")
+                        st.success("✅ ONNX model uploaded!")
             else:
                 st.warning("Please select a file.")
 

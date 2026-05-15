@@ -12,7 +12,7 @@ docker-compose up --build
 ---
 
 # Using the Dashboard
-The Dashboard is orginized by chosing existing submission_id or typying a new one. For now, only xgboost or torch models are avaliable. On the main tab, there is a box to submit checkpoint of a model (xgboost or torch). Examples of models and datasets for these three types can be found in example_xgboost, example_torch folders and in demonstration_preparation.ipynb file . To submit data, choice your dataframe saved as csv file and select target columns. To generate reports of model and data, switch to correspinding tab, configure ieeebus39 if needed and push the button.
+The Dashboard is orginized by chosing existing submission_id or typying a new one. Models are uploaded as **ONNX** checkpoints (`.onnx`) — PyTorch, XGBoost, scikit-learn, TensorFlow, etc. can all be exported to ONNX and evaluated through the same pipeline. On the main tab, there is a box to submit the ONNX checkpoint. Example training scripts that export to ONNX can be found in `example_xgboost`, `example_torch` folders and in `demonstration_preparation.ipynb`. To submit data, choice your dataframe saved as csv file and select target columns. To generate reports of model and data, switch to correspinding tab, configure ieeebus39 if needed and push the button.
 
 ---
 
