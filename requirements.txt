@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+onnx
+onnxruntime
+python-multipart
+pandas
+pandapower
+ydata-profiling
+giskard
+scikit-learn
+streamlit
