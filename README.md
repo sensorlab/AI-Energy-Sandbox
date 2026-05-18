@@ -22,3 +22,7 @@ The repository includes example files demonstrating the full workflow. The sampl
 > [https://www.iso-ne.com/isoexpress/web/reports/load-and-demand/-/tree/zone-info](https://www.iso-ne.com/isoexpress/web/reports/load-and-demand/-/tree/zone-info)
 
 This example illustrates how the system can be used to assess energy forecasting models under regulatory-oriented robustness and reliability criteria. The data and checkpoints for models are stored in example_xgboost and example_torch folders. 
+
+## Acknowledgment
+
+The authors would like to acknowledge funding from the European Union's Horizon Europe Framework Programme [EnerTEF](https://enertef.eu) project under Grant Agreement No. 101172887.
